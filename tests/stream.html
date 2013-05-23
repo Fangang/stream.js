@@ -1,17 +1,48 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../node_modules/mocha/mocha.css" /></head><body><div id="mocha"></div><script src="../node_modules/mocha/mocha.js"></script><script src="../node_modules/chai/chai.js"></script><script>mocha.ui("tdd");mocha.reporter("html");assert = chai.assert;</script>
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.css" /></head><body><div id="mocha"></div><script src="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.js"></script><script src="../node_modules/chai/chai.js"></script><script>mocha.ui("tdd");mocha.reporter("html");assert = chai.assert;</script>
 
-<!-- --------------------------------------------------- -->
 
 <script src="../stream.js"></script>
 
-<!-- --------------------------------------------------- -->
 
 <script>
 
-suite('stream.Stream', function () {
+suite('streamjs.Helper', function () {
     test("environment ok", function () {
-        assert.ok(stream);
-        assert.ok(stream.Stream);
+        assert.ok(streamjs);
+        assert.ok(streamjs.Helper);
+    });
+
+    test("add and remove CSS classes from a page", function () {
+        var c, page;
+
+        c = document.createElement("div");
+        c.id = "q1w2e3r4t6y67u78";
+        document.body.appendChild(c);
+
+        streamjs.Helper.addClass(c, "ettan");
+        assert.equal(c.className, "ettan");
+
+        streamjs.Helper.addClass(c, "tvaan");
+        assert.equal(c.className, "ettan tvaan");
+
+        streamjs.Helper.addClass(c, "trean");
+        assert.equal(c.className, "ettan tvaan trean");
+
+        streamjs.Helper.removeClass(c, "tvaan");
+        assert.equal(c.className, "ettan trean");
+
+        streamjs.Helper.removeClass(c, "ettan");
+        assert.equal(c.className, "trean");
+
+        streamjs.Helper.removeClass(c, "trean");
+        assert.equal(c.className, "");
+    });
+});
+
+suite('streamjs.Stream', function () {
+    test("environment ok", function () {
+        assert.ok(streamjs);
+        assert.ok(streamjs.Stream);
     });
 
     test("init, start at page 1", function () {
@@ -28,7 +59,7 @@ suite('stream.Stream', function () {
                                     </div>";
 
 
-        stream = new stream.Stream(document.getElementById('stream'),
+        stream = new streamjs.Stream(document.getElementById('stream'),
                             [document.getElementById('a1'), 
                             document.getElementById('a2'),
                             document.getElementById('a3'),
@@ -41,13 +72,13 @@ suite('stream.Stream', function () {
         assert.equal(stream.current, 0);
         assert.equal(stream.pages.length, 7);
 
-        assert.ok(stream.pages[0] instanceof stream.Page);
-        assert.ok(stream.pages[1] instanceof stream.Page);
-        assert.ok(stream.pages[2] instanceof stream.Page);
-        assert.ok(stream.pages[3] instanceof stream.Page);
-        assert.ok(stream.pages[4] instanceof stream.Page);
-        assert.ok(stream.pages[5] instanceof stream.Page);
-        assert.ok(stream.pages[6] instanceof stream.Page);
+        assert.ok(stream.pages[0] instanceof streamjs.Page);
+        assert.ok(stream.pages[1] instanceof streamjs.Page);
+        assert.ok(stream.pages[2] instanceof streamjs.Page);
+        assert.ok(stream.pages[3] instanceof streamjs.Page);
+        assert.ok(stream.pages[4] instanceof streamjs.Page);
+        assert.ok(stream.pages[5] instanceof streamjs.Page);
+        assert.ok(stream.pages[6] instanceof streamjs.Page);
     });
 
     test("goto any page", function () {
@@ -65,7 +96,7 @@ suite('stream.Stream', function () {
                                     </div>";
 
 
-        stream = new stream.Stream(document.getElementById('stream'),
+        stream = new streamjs.Stream(document.getElementById('stream'),
                             [document.getElementById('a1'), 
                             document.getElementById('a2'),
                             document.getElementById('a3'),
@@ -181,7 +212,7 @@ suite('stream.Stream', function () {
                                     </div>";
 
 
-        stream = new stream.Stream(document.getElementById('stream'),
+        stream = new streamjs.Stream(document.getElementById('stream'),
                             [document.getElementById('a1'), 
                             document.getElementById('a2'),
                             document.getElementById('a3'),
@@ -268,7 +299,7 @@ suite('stream.Stream', function () {
                                     </div>";
 
 
-        stream = new stream.Stream(document.getElementById('stream'),
+        stream = new streamjs.Stream(document.getElementById('stream'),
                             [document.getElementById('a1'), 
                             document.getElementById('a2'),
                             document.getElementById('a3'),
@@ -343,24 +374,24 @@ suite('stream.Stream', function () {
     });
 });
 
-suite('stream.Page', function () {
+suite('streamjs.Page', function () {
     test("environment ok", function () {
-        assert.ok(stream);
-        assert.ok(stream.Page);
+        assert.ok(streamjs);
+        assert.ok(streamjs.Page);
     });
 
     test("Creation of page objects, default", function () {
         var elem = document.createElement("div");
         elem.setAttribute("data-source", "1.html");
 
-        var page = new stream.Page(elem);
+        var page = new streamjs.Page(elem);
         
         assert.equal(page.loaded, false, "has not yet loaded");
         assert.equal(page.source, "1.html");
         
         elem.removeAttribute("data-source");
 
-        var page = new stream.Page(elem);
+        var page = new streamjs.Page(elem);
         
         assert.equal(page.loaded, true);
         assert.equal(page.source, undefined);
@@ -374,7 +405,7 @@ suite('stream.Page', function () {
 
         document.body.appendChild(c);
         
-        var page = new stream.Page(c);
+        var page = new streamjs.Page(c);
 
         assert.equal(page.content.nodeName, "DIV");
         assert.equal(page.loaded, true);
@@ -409,7 +440,7 @@ suite('stream.Page', function () {
         c.innerHTML = m;
         document.body.appendChild(c);
 
-        var page = new stream.Page(c);
+        var page = new streamjs.Page(c);
 
         page.unloadImgs();
 
@@ -436,7 +467,7 @@ suite('stream.Page', function () {
         var c = document.createElement("div");
         document.body.appendChild(c);
 
-        var page = new stream.Page(c);
+        var page = new streamjs.Page(c);
 
         page.makeInvis();
         assert.equal(page.content.className, "is-hidden");
@@ -450,7 +481,7 @@ suite('stream.Page', function () {
     test("Remove and readd a page from the DOM tree", function () {
         var c = document.createElement("div");
         document.body.appendChild(c);
-        var page = new stream.Page(c);
+        var page = new streamjs.Page(c);
 
 
         var spans = document.getElementsByTagName("span"), spans_i = spans.length;
@@ -477,37 +508,8 @@ suite('stream.Page', function () {
         assert.equal(document.getElementsByTagName("span").length, 0);
         assert.equal(page.pageRemoved, false);
     });
-
-    test("add and remove CSS classes from a page", function () {
-        var c, page;
-
-        c = document.createElement("div");
-        c.id = "content";
-        document.body.appendChild(c);
-        page = new stream.Page(c);
-
-        page.addClass("ettan");
-        assert.equal(page.content.className, "ettan");
-
-        page.addClass("tvaan");
-        assert.equal(page.content.className, "ettan tvaan");
-
-        page.addClass("trean");
-        assert.equal(page.content.className, "ettan tvaan trean");
-
-        page.removeClass("tvaan");
-        assert.equal(page.content.className, "ettan trean");
-
-        page.removeClass("ettan");
-        assert.equal(page.content.className, "trean");
-
-        page.removeClass("trean");
-        assert.equal(page.content.className, "");
-    });
 });
 
 </script>
-
-<!-- --------------------------------------------------- -->
 
 <script>if (window.mochaPhantomJS) { mochaPhantomJS.run(); } else { mocha.run(); }</script></body></html>

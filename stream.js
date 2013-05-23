@@ -6,10 +6,10 @@ Docs: https://github.com/madr/stream.js
 Free to distribute under the MIT License: 
 http://opensource.org/licenses/MIT
 */
-(function (global) {
+(function (g) {
     "use strict";
 
-    var Stream, Page, pxgif, httpObj;
+    var Stream, Page, Helper, pxgif;
 
     // Good ol' 1px gif, no-http-requests-please edition
     pxgif = "data:image/gif;base64,R0lGODlhAQABAIAAAA" +
@@ -40,15 +40,27 @@ http://opensource.org/licenses/MIT
      * scrolling in HTML5" - http://linkd.in/JG1urJ
      */
 
-    httpObj = function () {
-        var xhr = false;
+    Helper = (function () {
+        return {
+            addClass: function (elem, c) {
+                elem.classList.add(c);
+            },
 
-        if (window.XMLHttpRequest) {
-            xhr = new XMLHttpRequest();
-        }
+            removeClass: function (elem, c) {
+                elem.classList.remove(c);
+            },
 
-        return xhr;
-    };
+            httpObj: function () {
+                var xhr = false;
+
+                if (window.XMLHttpRequest) {
+                    xhr = new XMLHttpRequest();
+                }
+
+                return xhr;
+            }
+        };
+    }());
 
     Stream = function (elem, pageElems) {
         var i,
@@ -74,7 +86,7 @@ http://opensource.org/licenses/MIT
         },
 
         fetchPage: function (url, callback) {
-            var request = httpObj();
+            var request = Helper.httpObj();
             if (request) {
                 request.onreadystatechange = function () {
                     if (request.readyState === 4) {
@@ -406,25 +418,17 @@ http://opensource.org/licenses/MIT
             this.imgsUnloaded = false;
         },
 
-        addClass: function (c) {
-            this.content.classList.add(c);
-        },
-
-        removeClass: function (c) {
-            this.content.classList.remove(c);
-        },
-
         /* hides article with CSS. */
         makeInvis: function () {
             if (!this.loaded || this.pageInvis) { return; }
-            this.addClass("is-hidden");
+            Helper.addClass(this.content, "is-hidden");
             this.pageInvis = true;
         },
 
         /* show article from hidden state. */
         makeVis: function () {
             if (!this.loaded || !this.pageInvis) { return; }
-            this.removeClass("is-hidden");
+            Helper.removeClass(this.content, "is-hidden");
             this.pageInvis = false;
         }
     };
@@ -454,7 +458,8 @@ http://opensource.org/licenses/MIT
     /* end of events */
 
     // assign objects to global scope.
-    global.stream = {};
-    global.stream.Page = Page;
-    global.stream.Stream = Stream;
+    g.streamjs = {};
+    g.streamjs.Helper = Helper;
+    g.streamjs.Page = Page;
+    g.streamjs.Stream = Stream;
 }(this));
