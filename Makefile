@@ -12,6 +12,7 @@ test:
 
 dist:
 	node_modules/.bin/yuicompressor stream.js -o dist/stream.min.js
+	gzip -c dist/stream.min.js > dist/stream.min.js.gz
 	ls -hl dist
 
 httpd:
