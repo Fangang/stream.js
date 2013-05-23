@@ -1,0 +1,513 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../node_modules/mocha/mocha.css" /></head><body><div id="mocha"></div><script src="../node_modules/mocha/mocha.js"></script><script src="../node_modules/chai/chai.js"></script><script>mocha.ui("tdd");mocha.reporter("html");assert = chai.assert;</script>
+
+<!-- --------------------------------------------------- -->
+
+<script src="../stream.js"></script>
+
+<!-- --------------------------------------------------- -->
+
+<script>
+
+suite('stream.Stream', function () {
+    test("environment ok", function () {
+        assert.ok(stream);
+        assert.ok(stream.Stream);
+    });
+
+    test("init, start at page 1", function () {
+        var stream, s = document.getElementById("stream");
+        if (s) { s.parentNode.removeChild(s); }
+        document.body.innerHTML += "<div id='stream'>\
+                                    <div id='a1'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a2'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a3'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a4'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a5'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a6'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a7'><img src='http://holdr.madr.se/50/50'></div>\
+                                    </div>";
+
+
+        stream = new stream.Stream(document.getElementById('stream'),
+                            [document.getElementById('a1'), 
+                            document.getElementById('a2'),
+                            document.getElementById('a3'),
+                            document.getElementById('a4'),
+                            document.getElementById('a5'),
+                            document.getElementById('a6'),
+                            document.getElementById('a7')]);
+        stream.init();
+
+        assert.equal(stream.current, 0);
+        assert.equal(stream.pages.length, 7);
+
+        assert.ok(stream.pages[0] instanceof stream.Page);
+        assert.ok(stream.pages[1] instanceof stream.Page);
+        assert.ok(stream.pages[2] instanceof stream.Page);
+        assert.ok(stream.pages[3] instanceof stream.Page);
+        assert.ok(stream.pages[4] instanceof stream.Page);
+        assert.ok(stream.pages[5] instanceof stream.Page);
+        assert.ok(stream.pages[6] instanceof stream.Page);
+    });
+
+    test("goto any page", function () {
+        var stream, s = document.getElementById("stream");
+        if (s) { s.parentNode.removeChild(s); }
+
+        document.body.innerHTML += "<div id='stream'>\
+                                    <div id='a1'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a2'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a3'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a4'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a5'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a6'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a7'><img src='http://holdr.madr.se/50/50'></div>\
+                                    </div>";
+
+
+        stream = new stream.Stream(document.getElementById('stream'),
+                            [document.getElementById('a1'), 
+                            document.getElementById('a2'),
+                            document.getElementById('a3'),
+                            document.getElementById('a4'),
+                            document.getElementById('a5'),
+                            document.getElementById('a6'),
+                            document.getElementById('a7')]);
+        stream.init();
+
+        assert.equal(stream.current, 0);
+
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[0].imgsUnloaded, false);
+        assert.equal(stream.pages[0].pageRemoved, false);
+        assert.equal(stream.pages[0].pageInvis, false);
+
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].imgsUnloaded, false);
+        assert.equal(stream.pages[1].pageRemoved, false);
+        assert.equal(stream.pages[1].pageInvis, false);
+        
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].imgsUnloaded, true);
+        assert.equal(stream.pages[2].pageInvis, false);
+        assert.equal(stream.pages[2].pageRemoved, false);
+
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].pageInvis, true);
+        assert.equal(stream.pages[3].pageRemoved, false);
+
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].pageRemoved, true);
+        
+        stream.gotoX(5);
+
+        assert.equal(stream.current, 5);
+
+        assert.equal(stream.pages[5].loaded, true);
+        assert.equal(stream.pages[5].imgsUnloaded, false);
+        assert.equal(stream.pages[5].pageRemoved, false);
+        assert.equal(stream.pages[5].pageInvis, false);
+        
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].imgsUnloaded, false);
+        assert.equal(stream.pages[4].pageRemoved, false);
+        assert.equal(stream.pages[4].pageInvis, false);
+        assert.equal(stream.pages[6].loaded, true);
+        assert.equal(stream.pages[6].imgsUnloaded, false);
+        assert.equal(stream.pages[6].pageRemoved, false);
+        assert.equal(stream.pages[6].pageInvis, false);
+        
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].imgsUnloaded, true);
+        assert.equal(stream.pages[3].pageInvis, false);
+        assert.equal(stream.pages[3].pageRemoved, false);
+
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].pageInvis, true);
+        assert.equal(stream.pages[2].pageRemoved, false);
+
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].pageRemoved, true);
+
+
+        stream.gotoX(2);
+
+        assert.equal(stream.current, 2);
+
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].imgsUnloaded, false);
+        assert.equal(stream.pages[2].pageRemoved, false);
+        assert.equal(stream.pages[2].pageInvis, false);
+        
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].imgsUnloaded, false);
+        assert.equal(stream.pages[1].pageRemoved, false);
+        assert.equal(stream.pages[1].pageInvis, false);
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].imgsUnloaded, false);
+        assert.equal(stream.pages[3].pageRemoved, false);
+        assert.equal(stream.pages[3].pageInvis, false);
+        
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[0].imgsUnloaded, true);
+        assert.equal(stream.pages[0].pageInvis, false);
+        assert.equal(stream.pages[0].pageRemoved, false);
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].imgsUnloaded, true);
+        assert.equal(stream.pages[4].pageInvis, false);
+        assert.equal(stream.pages[4].pageRemoved, false);
+
+        assert.equal(stream.pages[5].loaded, true);
+        assert.equal(stream.pages[5].pageInvis, true);
+        assert.equal(stream.pages[5].pageRemoved, false);
+
+        assert.equal(stream.pages[6].loaded, true);
+        assert.equal(stream.pages[6].pageRemoved, true);
+        
+    });
+
+    test("goto next page", function () {
+        var stream, s = document.getElementById("stream");
+        if (s) { s.parentNode.removeChild(s); }
+
+        document.body.innerHTML += "<div id='stream'>\
+                                    <div id='a1'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a2'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a3'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a4'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a5'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a6'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a7'><img src='http://holdr.madr.se/50/50'></div>\
+                                    </div>";
+
+
+        stream = new stream.Stream(document.getElementById('stream'),
+                            [document.getElementById('a1'), 
+                            document.getElementById('a2'),
+                            document.getElementById('a3'),
+                            document.getElementById('a4'),
+                            document.getElementById('a5'),
+                            document.getElementById('a6'),
+                            document.getElementById('a7')]);
+        stream.init();
+
+        stream.gotoNext();
+
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].imgsUnloaded, false);
+        assert.equal(stream.pages[1].pageRemoved, false);
+        assert.equal(stream.pages[1].pageInvis, false);
+        
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[0].imgsUnloaded, false);
+        assert.equal(stream.pages[0].pageRemoved, false);
+        assert.equal(stream.pages[0].pageInvis, false);
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].imgsUnloaded, false);
+        assert.equal(stream.pages[2].pageRemoved, false);
+        assert.equal(stream.pages[2].pageInvis, false);
+        
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].imgsUnloaded, true);
+        assert.equal(stream.pages[3].pageInvis, false);
+        assert.equal(stream.pages[3].pageRemoved, false);
+ 
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].pageInvis, true);
+        assert.equal(stream.pages[4].pageRemoved, false);
+
+        assert.equal(stream.pages[5].loaded, true);
+        assert.equal(stream.pages[5].pageRemoved, true);        
+
+        stream.gotoNext();
+        stream.gotoNext();
+
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].imgsUnloaded, false);
+        assert.equal(stream.pages[3].pageRemoved, false);
+        assert.equal(stream.pages[3].pageInvis, false);
+        
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].imgsUnloaded, false);
+        assert.equal(stream.pages[2].pageRemoved, false);
+        assert.equal(stream.pages[2].pageInvis, false);
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].imgsUnloaded, false);
+        assert.equal(stream.pages[4].pageRemoved, false);
+        assert.equal(stream.pages[4].pageInvis, false);
+        
+        assert.equal(stream.pages[5].loaded, true);
+        assert.equal(stream.pages[5].imgsUnloaded, true);
+        assert.equal(stream.pages[5].pageInvis, false);
+        assert.equal(stream.pages[5].pageRemoved, false);
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].imgsUnloaded, true);
+        assert.equal(stream.pages[1].pageInvis, false);
+        assert.equal(stream.pages[1].pageRemoved, false);
+ 
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[0].pageInvis, true);
+        assert.equal(stream.pages[0].pageRemoved, false);
+        assert.equal(stream.pages[6].loaded, true);
+        assert.equal(stream.pages[6].pageInvis, true);
+        assert.equal(stream.pages[6].pageRemoved, false);
+     });
+
+    test("goto previous page", function () {
+        var stream, s = document.getElementById("stream");
+        if (s) { s.parentNode.removeChild(s); }
+
+        document.body.innerHTML += "<div id='stream'>\
+                                    <div id='a1'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a2'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a3'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a4'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a5'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a6'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a7'><img src='http://holdr.madr.se/50/50'></div>\
+                                    </div>";
+
+
+        stream = new stream.Stream(document.getElementById('stream'),
+                            [document.getElementById('a1'), 
+                            document.getElementById('a2'),
+                            document.getElementById('a3'),
+                            document.getElementById('a4'),
+                            document.getElementById('a5'),
+                            document.getElementById('a6'),
+                            document.getElementById('a7')]);
+        stream.init(2);
+
+        stream.gotoPrev();
+
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].imgsUnloaded, false);
+        assert.equal(stream.pages[1].pageRemoved, false);
+        assert.equal(stream.pages[1].pageInvis, false);
+        
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[0].imgsUnloaded, false);
+        assert.equal(stream.pages[0].pageRemoved, false);
+        assert.equal(stream.pages[0].pageInvis, false);
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].imgsUnloaded, false);
+        assert.equal(stream.pages[2].pageRemoved, false);
+        assert.equal(stream.pages[2].pageInvis, false);
+        
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].imgsUnloaded, true);
+        assert.equal(stream.pages[3].pageInvis, false);
+        assert.equal(stream.pages[3].pageRemoved, false);
+ 
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].pageInvis, true);
+        assert.equal(stream.pages[4].pageRemoved, false);
+
+        assert.equal(stream.pages[5].loaded, true);
+        assert.equal(stream.pages[5].pageRemoved, true);        
+
+        stream.gotoX(5);
+
+        stream.gotoPrev();
+        stream.gotoPrev();
+
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[3].imgsUnloaded, false);
+        assert.equal(stream.pages[3].pageRemoved, false);
+        assert.equal(stream.pages[3].pageInvis, false);
+        
+        assert.equal(stream.pages[2].loaded, true);
+        assert.equal(stream.pages[2].imgsUnloaded, false);
+        assert.equal(stream.pages[2].pageRemoved, false);
+        assert.equal(stream.pages[2].pageInvis, false);
+        assert.equal(stream.pages[4].loaded, true);
+        assert.equal(stream.pages[4].imgsUnloaded, false);
+        assert.equal(stream.pages[4].pageRemoved, false);
+        assert.equal(stream.pages[4].pageInvis, false);
+        
+        assert.equal(stream.pages[5].loaded, true);
+        assert.equal(stream.pages[5].imgsUnloaded, true);
+        assert.equal(stream.pages[5].pageInvis, false);
+        assert.equal(stream.pages[5].pageRemoved, false);
+        assert.equal(stream.pages[1].loaded, true);
+        assert.equal(stream.pages[1].imgsUnloaded, true);
+        assert.equal(stream.pages[1].pageInvis, false);
+        assert.equal(stream.pages[1].pageRemoved, false);
+ 
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[0].pageInvis, true);
+        assert.equal(stream.pages[0].pageRemoved, false);
+        assert.equal(stream.pages[6].loaded, true);
+        assert.equal(stream.pages[6].pageInvis, true);
+        assert.equal(stream.pages[6].pageRemoved, false);
+    });
+});
+
+suite('stream.Page', function () {
+    test("environment ok", function () {
+        assert.ok(stream);
+        assert.ok(stream.Page);
+    });
+
+    test("Creation of page objects, default", function () {
+        var elem = document.createElement("div");
+        elem.setAttribute("data-source", "1.html");
+
+        var page = new stream.Page(elem);
+        
+        assert.equal(page.loaded, false, "has not yet loaded");
+        assert.equal(page.source, "1.html");
+        
+        elem.removeAttribute("data-source");
+
+        var page = new stream.Page(elem);
+        
+        assert.equal(page.loaded, true);
+        assert.equal(page.source, undefined);
+    });
+
+    test("Load content to a page (typical ajax callback)", function () {
+        
+        var c;
+
+        c = document.createElement("div");
+
+        document.body.appendChild(c);
+        
+        var page = new stream.Page(c);
+
+        assert.equal(page.content.nodeName, "DIV");
+        assert.equal(page.loaded, true);
+        assert.equal(page.parent.nodeName, "BODY");
+        assert.equal(page.dummy.nodeName, "SPAN");
+        assert.equal(page.imgs.length, 0);
+        assert.equal(page.imgsLen, 0);
+
+        assert.equal(page.pageInvis, false);
+        assert.equal(page.imgsUnloaded, false);
+        assert.equal(page.pageRemoved, false);
+
+        c.innerHTML = "<img src='http://holdr.madr.se/5/5'>";
+
+        page.load(c);
+
+        assert.equal(page.content.nodeName, "DIV");
+        assert.equal(page.loaded, true);
+        assert.equal(page.parent.nodeName, "BODY");
+        assert.equal(page.dummy.nodeName, "SPAN");
+        assert.equal(page.imgs.length, 1);
+        assert.equal(page.imgsLen, 1);
+    });
+
+    test("Unload and load images in a page", function () {
+        var m = "<img src='http://holdr.madr.se/5/5'>" +
+                "<img src='http://holdr.madr.se/5/6'>",
+            c = document.createElement("div"),
+            pxgif = "data:image/gif;base64,R0lGODlhAQABAIAAAA" +
+             "AAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+        
+        c.innerHTML = m;
+        document.body.appendChild(c);
+
+        var page = new stream.Page(c);
+
+        page.unloadImgs();
+
+        assert.equal(page.content.getElementsByTagName("img").length, 2);
+        assert.equal(page.content.getElementsByTagName("img")[0].src, pxgif);
+        assert.equal(page.content.getElementsByTagName("img")[1].src, pxgif);
+        assert.equal(page.content.getElementsByTagName("img")[0].getAttribute("data-src"), "http://holdr.madr.se/5/5");
+        assert.equal(page.content.getElementsByTagName("img")[1].getAttribute("data-src"), "http://holdr.madr.se/5/6");
+
+        assert.equal(page.imgsUnloaded, true);
+
+        page.loadImgs();
+
+        assert.equal(page.content.getElementsByTagName("img").length, 2);
+        assert.equal(page.content.getElementsByTagName("img")[0].src, "http://holdr.madr.se/5/5");
+        assert.equal(page.content.getElementsByTagName("img")[1].src, "http://holdr.madr.se/5/6");
+        assert.equal(page.content.getElementsByTagName("img")[0].getAttribute("data-src"), "http://holdr.madr.se/5/5");
+        assert.equal(page.content.getElementsByTagName("img")[1].getAttribute("data-src"), "http://holdr.madr.se/5/6");
+
+        assert.equal(page.imgsUnloaded, false);
+    });
+
+    test("toggle visiblity of a page", function () {
+        var c = document.createElement("div");
+        document.body.appendChild(c);
+
+        var page = new stream.Page(c);
+
+        page.makeInvis();
+        assert.equal(page.content.className, "is-hidden");
+        assert.equal(page.pageInvis, true);
+
+        page.makeVis();
+        assert.equal(page.content.className, "");
+        assert.equal(page.pageInvis, false);
+    });
+
+    test("Remove and readd a page from the DOM tree", function () {
+        var c = document.createElement("div");
+        document.body.appendChild(c);
+        var page = new stream.Page(c);
+
+
+        var spans = document.getElementsByTagName("span"), spans_i = spans.length;
+        while (spans_i--) {
+            spans[spans_i].parentNode.removeChild(spans[spans_i]);
+        }
+
+        c = document.createElement("div");
+        c.id = "content";
+        document.body.appendChild(c);
+        
+        page.load(c);
+
+        page.remove();
+
+        assert.ok(!document.getElementById("content"));
+        assert.equal(document.getElementsByTagName("span").length, 1);
+        assert.equal(page.pageRemoved, true);
+
+
+        page.readd();
+
+        assert.ok(!!document.getElementById("content"));
+        assert.equal(document.getElementsByTagName("span").length, 0);
+        assert.equal(page.pageRemoved, false);
+    });
+
+    test("add and remove CSS classes from a page", function () {
+        var c, page;
+
+        c = document.createElement("div");
+        c.id = "content";
+        document.body.appendChild(c);
+        page = new stream.Page(c);
+
+        page.addClass("ettan");
+        assert.equal(page.content.className, "ettan");
+
+        page.addClass("tvaan");
+        assert.equal(page.content.className, "ettan tvaan");
+
+        page.addClass("trean");
+        assert.equal(page.content.className, "ettan tvaan trean");
+
+        page.removeClass("tvaan");
+        assert.equal(page.content.className, "ettan trean");
+
+        page.removeClass("ettan");
+        assert.equal(page.content.className, "trean");
+
+        page.removeClass("trean");
+        assert.equal(page.content.className, "");
+    });
+});
+
+</script>
+
+<!-- --------------------------------------------------- -->
+
+<script>if (window.mochaPhantomJS) { mochaPhantomJS.run(); } else { mocha.run(); }</script></body></html>
