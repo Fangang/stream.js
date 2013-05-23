@@ -1,5 +1,4 @@
 install-npm:
-	brew install phantomjs # or similar
 	npm install jslint
 	npm install mocha-phantomjs
 	npm install chai
