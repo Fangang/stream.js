@@ -123,91 +123,83 @@ http://opensource.org/licenses/MIT
             p.readd();
         },
 
-        fixFuture: function (page) {
-            // next page should exists in DOM tree,
-            // have loaded images and be visible.
-            // if not loaded yet, it's about time
-            // it is.
-            if (++page < this.last) {
+        fixPage: function (page, state) {
+            switch (state) {
+                // next/prev page should exists in DOM tree,
+                // have loaded images and be visible.
+                // if not loaded yet, it's about time
+                // it is.
+            case 1:
                 this.loadPage(this.pages[page]);
                 this.pages[page].makeVis();
                 this.pages[page].loadImgs();
                 this.pages[page].readd();
-            }
-
-            // the page after the next page
+                break;
+            // the page after the next/prev page
             // should be as above, but without
             // images loaded.
-            if (++page < this.last) {
+            case 2:
                 this.loadPage(this.pages[page]);
                 this.pages[page].unloadImgs();
                 this.pages[page].makeVis();
                 this.pages[page].readd();
-            }
+                break;
 
-            // the page after the page after the next page
+            // the page after the page after the next/prev page
             // should have no images and be invisible.
-            if (++page < this.last) {
+            case 3:
                 this.loadPage(this.pages[page]);
                 this.pages[page].unloadImgs();
                 this.pages[page].makeInvis();
                 this.pages[page].readd();
-            }
-
+                break;
             // the pages beyond that should simply be removed
             // until the stream requires them to be re-added.
-            while (++page < this.last) {
+            case 4:
                 this.pages[page].remove();
+                break;
+            }
+        },
+
+        fixFuture: function (page) {
+
+            if (++page < this.last) {
+                this.fixPage(page, 1);
+            }
+
+            if (++page < this.last) {
+                this.fixPage(page, 2);
+            }
+
+            if (++page < this.last) {
+                this.fixPage(page, 3);
+            }
+
+            while (++page < this.last) {
+                this.fixPage(page, 4);
             }
         },
 
         fixPast: function (page) {
-            // prev page should exists in DOM tree,
-            // have loaded images and be visible.
-            // if not loaded yet, it's about time
-            // it is.
             if (page-- > 0) {
-                this.loadPage(this.pages[page]);
-                this.pages[page].makeVis();
-                this.pages[page].loadImgs();
-                this.pages[page].readd();
+                this.fixPage(page, 1);
             }
 
-            // the page before the prev page
-            // should be as above, but without
-            // images loaded.
             if (page-- > 0) {
-                this.loadPage(this.pages[page]);
-                this.pages[page].unloadImgs();
-                this.pages[page].makeVis();
-                this.pages[page].readd();
+                this.fixPage(page, 2);
             }
 
-            // the page before the page before the prev page
-            // should have no images and be invisible.
             if (page-- > 0) {
-                this.loadPage(this.pages[page]);
-                this.pages[page].unloadImgs();
-                this.pages[page].makeInvis();
-                this.pages[page].readd();
+                this.fixPage(page, 3);
             }
 
-            // the pages beyond that should simply be removed
-            // until the stream requires them to be re-added.
             while (page-- > 0) {
-                this.pages[page].remove();
+                this.fixPage(page, 4);
             }
         },
 
         gotoX: function (page, direction) {
             if (direction === undefined) { direction = "both"; }
-
-            /*
-            ADEPRIMO.Mobile.Event.trig({type: "m3:article:beforeChangeCurrent", 
-                oldCurrent: this.pages[this.current], 
-                newCurrent: page 
-            });
-            */
 
             this.current = page;
 
@@ -223,58 +215,12 @@ http://opensource.org/licenses/MIT
             if (direction !== "next") {
                 this.fixPast(page);
             }
-
-            /*
-            ADEPRIMO.Mobile.Event.trig({type: "m3:article:afterChangeCurrent", 
-                current: page,
-                elem: this.pages[page] 
-            });
-            */
         },
 
         /* Called on page load. Will fallback on first Page 
         if Page is not specified. */
         init: function (pageNum) {
             this.gotoX(pageNum || 0);
-
-            /*
-            global.ADEPRIMO.Mobile.Event.add("m3:carousel:prev", (function (stream) {
-                return function (evt) {
-                    stream.gotoPrev();
-                };
-            }(this)));
-
-            global.ADEPRIMO.Mobile.Event.add("m3:carousel:next", (function (stream) {
-                return function (evt) {
-                    stream.gotoNext();
-                };
-            }(this)));
-
-            global.ADEPRIMO.Mobile.Event.add("m3:carousel:paneChange", (function (stream) {
-                return function (evt) {
-                    stream.gotoX(evt.pane, evt.direction || "both");
-                };
-            }(this)));
-
-            global.ADEPRIMO.Mobile.Event.add("m3:carousel:paneResize", (function (stream) {
-                return function (evt) {
-                    stream.resizePages(evt.x);
-                };
-            }(this)));
-            */
-        },
-
-        resizePages: function (x) {
-            /* untested! */
-            var pages = this.pages, i, max = pages.length;
-
-            for (i = 0; i < max; i++) {
-                pages[i].content.style.width = x + "px";
-
-                if (pages[i].loaded) {
-                    pages[i].dummy.style.width = x + "px";
-                }
-            }
         },
 
         // goto next Page.
@@ -293,6 +239,37 @@ http://opensource.org/licenses/MIT
                 p--;
             }
             this.gotoX(p);
+        },
+
+        // add page to stream, in 3 different places:
+        // 1) last, 2) first, 3) custom location
+        addPage: function (elem, pos) {
+            var page;
+
+            if (pos === undefined) { pos = true; }
+
+            // elem should be in the DOM already,
+            // either with data-source (not loaded yet) 
+            // or loaded content.
+            page = new Page(elem);
+
+            // default: append the page to the stream.
+            if (pos === true) {
+                this.pages.push(page);
+                return;
+            }
+
+            // prepend the page to the stream.
+            if (pos === false) {
+                this.pages.unshift(page);
+                return;
+            }
+
+            // asuming (hoping) pos is an int
+            // and try to use it as a custom
+            // location for the new page.
+            pos = parseInt(pos, 10);
+            this.pages.splice(pos, 0, page);
         }
     };
 
@@ -361,9 +338,10 @@ http://opensource.org/licenses/MIT
             if (!this.loaded || this.pageRemoved) { return; }
             // a dummy is used to remember the position in the 
             // DOM tree.
-            if (this.content.style.width) {
-                this.dummy.style.width = this.content.style.width;
+            if (this.content.style.length) {
+                this.dummy.style = this.content.style;
             }
+            this.dummy.className = this.content.className;
             this.parent.insertBefore(this.dummy, this.content);
             this.content = this.parent.removeChild(this.content);
             this.pageRemoved = true;
@@ -432,30 +410,6 @@ http://opensource.org/licenses/MIT
             this.pageInvis = false;
         }
     };
-
-    /**
-     * Attach events
-     */
-    /*
-    global.ADEPRIMO.Mobile.Event.add("m3:carousel:init", function (evt) {
-        var streamElem = document.getElementById(evt.elemId),
-            pages = document.querySelectorAll(evt.panes),
-            stream;
-
-        stream = new Stream(streamElem, pages);
-        stream.init(evt.startingPane || 0);
-
-        global.ADEPRIMO.Mobile.Event.add("m3:carousel:inject", (function (stream) {
-            return function (evt) {
-                var i;
-                for (i = 0; i < evt.data.length; i++) {
-                    stream.injectPage(evt.data[i]);
-                }
-            };
-        }(stream)));
-    });
-    */
-    /* end of events */
 
     // assign objects to global scope.
     g.streamjs = {};
