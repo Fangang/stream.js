@@ -53,8 +53,14 @@ http://opensource.org/licenses/MIT
             httpObj: function () {
                 var xhr = false;
 
-                if (window.XMLHttpRequest) {
-                    xhr = new XMLHttpRequest();
+                if (g.XMLHttpRequest) {
+                    xhr = new g.XMLHttpRequest();
+                } else if (g.ActiveXObject) {
+                    try {
+                        xhr = new g.ActiveXObject("Msxml2.XMLHTTP");
+                    } catch (e) {
+                        xhr = false;
+                    }
                 }
 
                 return xhr;
