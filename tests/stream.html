@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.css" /></head><body><div id="mocha"></div><script src="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.js"></script><script src="../node_modules/chai/chai.js"></script><script>mocha.ui("tdd");mocha.reporter("html");assert = chai.assert;</script>
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.css" /></head><body><div id="mocha"></div><script src="../node_modules/mocha-phantomjs/node_modules/mocha/mocha.js"></script><script src="../node_modules/chai/chai.js"></script><script>mocha.ui("tdd");mocha.setup({globals:['ActiveXObject']});mocha.reporter("html");assert = chai.assert;</script>
 
 
 <script src="../stream.js"></script>
@@ -36,6 +36,26 @@ suite('streamjs.Helper', function () {
 
         streamjs.Helper.removeClass(c, "trean");
         assert.equal(c.className, "");
+    });
+
+    test("getHttpObj to do ajax stuffs", function () {
+        var request;
+
+        window.XMLHttpRequest = function () {};
+        window.ActiveXObject = function () {};
+
+        request = streamjs.Helper.httpObj();
+        assert.ok(request);
+
+        window.XMLHttpRequest = false;
+
+        request = streamjs.Helper.httpObj();
+        assert.ok(request);
+
+        window.ActiveXObject = false;
+
+        request = streamjs.Helper.httpObj();
+        assert.equal(request, false);
     });
 });
 
