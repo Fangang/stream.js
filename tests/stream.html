@@ -425,7 +425,7 @@ suite('streamjs.Stream', function () {
         assert.equal(stream.pages[6].loaded, true);
         assert.equal(stream.pages[6].pageInvis, true);
         assert.equal(stream.pages[6].pageRemoved, false);
-     });
+    });
 
     test("goto previous page", function () {
         var stream, s = document.getElementById("stream");
@@ -516,6 +516,71 @@ suite('streamjs.Stream', function () {
         assert.equal(stream.pages[6].loaded, true);
         assert.equal(stream.pages[6].pageInvis, true);
         assert.equal(stream.pages[6].pageRemoved, false);
+    });
+
+    test("add more pages", function () {
+        var stream, s = document.getElementById("stream");
+        if (s) { s.parentNode.removeChild(s); }
+
+        var d = document.createElement("div");
+        d.innerHTML += "<div id='stream'>\
+                                    <div id='a1'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a2'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a3'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a4'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a5'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a6'><img src='http://holdr.madr.se/50/50'></div>\
+                                    <div id='a7'><img src='http://holdr.madr.se/50/50'></div>\
+                                    </div>";
+
+        document.body.appendChild(d);
+
+        stream = new streamjs.Stream(document.getElementById('stream'),
+                            [document.getElementById('a1'), 
+                            document.getElementById('a2'),
+                            document.getElementById('a3'),
+                            document.getElementById('a4'),
+                            document.getElementById('a5'),
+                            document.getElementById('a6'),
+                            document.getElementById('a7')]);
+
+        d.innerHTML += "<div id='a8'><img src='http://holdr.madr.se/50/50'></div>\
+                        <div id='a9'><img src='http://holdr.madr.se/50/50'></div>\
+                        <div id='a10'><img src='http://holdr.madr.se/50/50'></div>\
+                        <div id='a11'><img src='http://holdr.madr.se/50/50'></div>";
+
+        // default: append it
+        stream.addPage(document.getElementById("a8"));
+        assert.equal(stream.pages.length, 8);
+        assert.ok(stream.pages[7] instanceof streamjs.Page);
+        assert.equal(stream.pages[7].loaded, true);
+
+        // prepend it
+        stream.addPage(document.getElementById("a9"), false);
+        assert.equal(stream.pages.length, 9);
+        assert.ok(stream.pages[0] instanceof streamjs.Page);
+        assert.equal(stream.pages[0].loaded, true);
+        assert.equal(stream.pages[1].content.id, "a1");
+        assert.equal(stream.pages[2].content.id, "a2");
+
+        // any position
+        stream.addPage(document.getElementById("a10"), 3);
+        assert.equal(stream.pages.length, 10);
+        assert.ok(stream.pages[3] instanceof streamjs.Page);
+        assert.equal(stream.pages[3].loaded, true);
+        assert.equal(stream.pages[1].content.id, "a1");
+        assert.equal(stream.pages[2].content.id, "a2");
+        assert.equal(stream.pages[4].content.id, "a3");
+        assert.equal(stream.pages[5].content.id, "a4");
+
+        // any position
+        stream.addPage(document.getElementById("a11"), 8);
+        assert.equal(stream.pages.length, 11);
+        assert.ok(stream.pages[8] instanceof streamjs.Page);
+        assert.equal(stream.pages[8].loaded, true);
+        assert.equal(stream.pages[7].content.id, "a6");
+        assert.equal(stream.pages[9].content.id, "a7");
+        assert.equal(stream.pages[10].content.id, "a8");
     });
 });
 
